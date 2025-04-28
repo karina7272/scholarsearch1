@@ -7,6 +7,10 @@ Original file is located at
     https://colab.research.google.com/drive/1Ds7JREUJ6x4cFTfjMPKKCZ1SjZ-P4J-n
 """
 
+!pip install streamlit
+
+# scholarsearch1.py
+
 # --- Import Libraries ---
 import streamlit as st
 import pandas as pd
@@ -14,39 +18,35 @@ import requests
 from bs4 import BeautifulSoup
 
 # --- Page Settings ---
-st.set_page_config(page_title="Scholarship Search - Accounting 2025", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="Scholarship Search", page_icon="🎓", layout="wide")
 
-# --- Title and Description ---
-st.title("🎓 Scholarship Finder - Accounting Scholarships 2025")
-st.subheader("🔎 Find Undergraduate and Graduate Scholarships in Accounting")
-st.markdown("Welcome! Search real-time scholarships focused on Accounting, Business, and Finance fields. 🔥")
+st.title("🎓 Search Scholarships")
 
 # --- User Input ---
-keyword = st.text_input("Enter keyword (e.g., Accounting, Tennessee, Undergraduate):")
+keyword = st.text_input("Enter a keyword (e.g., Accounting, Finance, Tennessee):")
 search_button = st.button("🔍 Search Scholarships")
 
-# --- Function: Scrape Scholarships ---
+# --- Scrape Function ---
 def scrape_scholarships(keyword):
-    url = "https://www.unigo.com/scholarships/accounting-scholarships"  # Base website
-
+    url = f"https://www.unigo.com/scholarships/accounting-scholarships"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        st.error(f"Connection error: {e}")
+        st.error(f"⚠️ Connection error: {e}")
         return pd.DataFrame()
 
     soup = BeautifulSoup(response.text, "html.parser")
 
     scholarships = []
+    cards = soup.find_all('div', class_="search-results-card")[:20]
 
-    cards = soup.find_all('div', class_='search-results-card')[:15]  # Limit to first 15 results
     for card in cards:
         title = card.find('h2').text.strip() if card.find('h2') else "No Title"
         link_tag = card.find('a')
         link = f"https://www.unigo.com{link_tag['href']}" if link_tag else "No Link"
-        amount = card.find('span', class_='amount')
-        deadline = card.find('span', class_='deadline')
+        amount = card.find('span', class_="amount")
+        deadline = card.find('span', class_="deadline")
 
         scholarships.append({
             "Scholarship Name": title,
@@ -57,42 +57,33 @@ def scrape_scholarships(keyword):
 
     df = pd.DataFrame(scholarships)
 
-    # --- Filter Based on Keyword ---
     if keyword:
         df = df[df["Scholarship Name"].str.contains(keyword, case=False, na=False)]
 
     return df
 
-# --- Main Logic ---
+# --- Main App Logic ---
 if search_button:
     if keyword.strip() == "":
-        st.warning("⚠️ Please enter a valid keyword to search.")
+        st.warning("⚠️ Please enter a keyword.")
     else:
-        with st.spinner("Fetching scholarships... please wait 🔄"):
+        with st.spinner("🔎 Searching scholarships..."):
             results = scrape_scholarships(keyword)
-
             if not results.empty:
-                st.success(f"✅ Found {len(results)} scholarships matching your search!")
-
+                st.success(f"✅ Found {len(results)} scholarships!")
                 st.dataframe(results, use_container_width=True)
 
-                # --- Download Button ---
+                # --- Download button ---
                 csv = results.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="⬇️ Download Results as CSV",
+                    label="⬇️ Download CSV",
                     data=csv,
                     file_name="scholarship_results.csv",
                     mime="text/csv"
                 )
             else:
-                st.warning("😞 No scholarships found for the entered keyword. Try a different one.")
+                st.warning("❌ No results found. Try another keyword.")
 
 # --- Footer ---
 st.markdown("---")
-st.caption("Developed by Dr.K | Scholarship Search Dashboard 2025 🚀")
-
-!streamlit run scholarsearch.py &
-
-from pyngrok import ngrok
-public_url = ngrok.connect(port=8501)
-print(public_url)
+st.caption("Created by Dr.K | Scholarship Search - Accounting 2025 🎯")
