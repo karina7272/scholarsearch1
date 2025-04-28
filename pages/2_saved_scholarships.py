@@ -8,13 +8,26 @@ Original file is located at
 """
 
 import streamlit as st
+import pandas as pd
 
+# --- Page Settings ---
+st.set_page_config(page_title="Saved Scholarships", page_icon="💾", layout="wide")
+
+# --- Title ---
 st.title("💾 Saved Scholarships")
 
-st.info("Feature coming soon: You'll be able to save your favorite scholarships into a personal list! 📋")
+# --- Load Saved Scholarships ---
+try:
+    saved_df = pd.read_csv("saved_scholarships.csv")
+    if not saved_df.empty:
+        st.dataframe(saved_df, use_container_width=True)
 
+        st.success(f"✅ You have saved {len(saved_df)} scholarships.")
+    else:
+        st.info("📭 No scholarships saved yet. Go back to search and save some!")
+except FileNotFoundError:
+    st.info("📭 No scholarships saved yet. Go back to search and save some!")
+
+# --- Footer ---
 st.markdown("---")
-st.markdown("✅ Stay tuned! Future updates will allow you to:")
-st.markdown("- Save scholarships during search")
-st.markdown("- Track application deadlines")
-st.markdown("- Manage your application checklist")
+st.caption("Created by Dr.K | Scholarship Search - Accounting 2025 🎯")

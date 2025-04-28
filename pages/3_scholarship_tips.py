@@ -9,18 +9,34 @@ Original file is located at
 
 import streamlit as st
 
-st.title("📚 Scholarship Application Tips")
+# --- Page Settings ---
+st.set_page_config(page_title="Scholarship Tips", page_icon="💡", layout="wide")
 
+# --- Title ---
+st.title("💡 Scholarship Tips for Students")
+
+# --- Content ---
 st.markdown("""
-### ✨ Top Tips for Winning Scholarships:
-- **Start Early**: Application deadlines sneak up fast!
-- **Personalize Your Essay**: Tailor every essay to the specific scholarship.
-- **Get Strong Recommendations**: Ask professors early.
-- **Highlight Leadership and Community Involvement**: They love to see impact!
-- **Double-Check Requirements**: Small mistakes cost awards.
-- **Apply to MANY**: Don't just pick one!
+## 📚 Best Practices for Winning Scholarships:
+
+- **Start Early**: Deadlines come faster than you expect. Plan months ahead!
+- **Customize Essays**: Tailor each application to match the scholarship mission.
+- **Highlight Achievements**: Leadership, community service, and academic awards are key!
+- **Ask for Strong Recommendations**: Choose teachers or mentors who know you well.
+- **Proofread Carefully**: Typos can cost you opportunities.
+- **Apply Widely**: Increase your chances by applying to many scholarships.
+
+---
+## 📍 Special Tips for Accounting Scholarships:
+
+- Emphasize your interest in **financial literacy** and **ethical responsibility**.
+- Mention **CPA aspirations** or **finance career goals**.
+- Look for local **state accounting societies** — many offer scholarships.
+- Highlight **internships or part-time jobs** related to finance/accounting fields.
 
 ---
 """)
 
-st.success("Believe in yourself! Every application gets you closer to free tuition 🎯")
+# --- Footer ---
+st.markdown("---")
+st.caption("Created by Dr.K | Scholarship Search - Accounting 2025 🎯")
