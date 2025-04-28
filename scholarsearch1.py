@@ -7,79 +7,80 @@ Original file is located at
     https://colab.research.google.com/drive/1Ds7JREUJ6x4cFTfjMPKKCZ1SjZ-P4J-n
 """
 
-!pip install streamlit
-
-# scholarsearch1.py
-
 # --- Import Libraries ---
 import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import time
 
-# --- Page Settings ---
-st.set_page_config(page_title="Scholarship Search", page_icon="🎓", layout="wide")
-
+# --- Streamlit App Title ---
+st.set_page_config(page_title="Scholarship Search App", page_icon="🎓")
 st.title("🎓 Search Scholarships")
 
-# --- User Input ---
+# --- Input for Keyword ---
 keyword = st.text_input("Enter a keyword (e.g., Accounting, Finance, Tennessee):")
-search_button = st.button("🔍 Search Scholarships")
+search_button = st.button("🔎 Search Scholarships")
 
-# --- Scrape Function ---
+# --- Scraping Function ---
 def scrape_scholarships(keyword):
-    url = f"https://www.unigo.com/scholarships/accounting-scholarships"
+    url = f"https://www.unigo.com/scholarships/{keyword.lower()}-scholarships"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        st.error(f"⚠️ Connection error: {e}")
+        st.error(f"❌ Connection error: {e}")
         return pd.DataFrame()
 
     soup = BeautifulSoup(response.text, "html.parser")
-
     scholarships = []
     cards = soup.find_all('div', class_="search-results-card")[:20]
 
     for card in cards:
-        title = card.find('h2').text.strip() if card.find('h2') else "No Title"
+        title_tag = card.find('h2')
+        title = title_tag.text.strip() if title_tag else "No Title"
+
         link_tag = card.find('a')
         link = f"https://www.unigo.com{link_tag['href']}" if link_tag else "No Link"
-        amount = card.find('span', class_="amount")
-        deadline = card.find('span', class_="deadline")
+
+        amount_tag = card.find('span', class_='amount')
+        amount = amount_tag.text.strip() if amount_tag else "Unknown"
+
+        deadline_tag = card.find('span', class_='deadline')
+        deadline = deadline_tag.text.strip() if deadline_tag else "Unknown"
 
         scholarships.append({
             "Scholarship Name": title,
-            "Amount": amount.text.strip() if amount else "Unknown",
-            "Deadline": deadline.text.strip() if deadline else "Unknown",
+            "Amount": amount,
+            "Deadline": deadline,
             "Link": link
         })
 
     df = pd.DataFrame(scholarships)
 
-    if keyword:
-        df = df[df["Scholarship Name"].str.contains(keyword, case=False, na=False)]
+    if not df.empty and keyword:
+        df = df[df['Scholarship Name'].str.contains(keyword, case=False, na=False)]
 
     return df
 
-# --- Main App Logic ---
+# --- Main Logic ---
 if search_button:
-    if keyword.strip() == "":
-        st.warning("⚠️ Please enter a keyword.")
+    if not keyword.strip():
+        st.warning("⚠️ Please enter a keyword to search.")
     else:
-        with st.spinner("🔎 Searching scholarships..."):
+        with st.spinner("⏳ Searching scholarships..."):
             results = scrape_scholarships(keyword)
+
             if not results.empty:
                 st.success(f"✅ Found {len(results)} scholarships!")
                 st.dataframe(results, use_container_width=True)
 
-                # --- Download button ---
                 csv = results.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="⬇️ Download CSV",
+                    label="⬇️ Download Results as CSV",
                     data=csv,
-                    file_name="scholarship_results.csv",
-                    mime="text/csv"
+                    file_name='scholarship_results.csv',
+                    mime='text/csv'
                 )
             else:
                 st.warning("❌ No results found. Try another keyword.")
